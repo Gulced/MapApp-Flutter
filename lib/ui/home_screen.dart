@@ -42,7 +42,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<MapPoint?> _askForPointInfo(LatLng pos, {MapPoint? existing}) {
     final titleCtrl = TextEditingController(text: existing?.title);
-    final descCtrl  = TextEditingController(text: existing?.description);
+    final descCtrl = TextEditingController(text: existing?.description);
     return showDialog<MapPoint>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -50,8 +50,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: titleCtrl, decoration: InputDecoration(labelText: 'Başlık')),
-            TextField(controller: descCtrl,  decoration: InputDecoration(labelText: 'Açıklama')),
+            TextField(
+                controller: titleCtrl,
+                decoration: InputDecoration(labelText: 'Başlık')),
+            TextField(
+                controller: descCtrl,
+                decoration: InputDecoration(labelText: 'Açıklama')),
           ],
         ),
         actions: [
@@ -61,13 +65,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               final t = titleCtrl.text.trim();
               if (t.isEmpty) return;
               final user = ref.read(authViewModelProvider).user!;
-              Navigator.pop(ctx, MapPoint(
-                id:          existing?.id,
-                ownerId:     user.id!,
-                position:    pos,
-                title:       t,
-                description: descCtrl.text.trim(),
-              ));
+              Navigator.pop(
+                  ctx,
+                  MapPoint(
+                    id: existing?.id,
+                    ownerId: user.id!,
+                    position: pos,
+                    title: t,
+                    description: descCtrl.text.trim(),
+                  ));
             },
             child: Text('Kaydet'),
           ),
@@ -76,7 +82,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Future<MapArea?> _askForAreaInfo(List<LatLng> coords, {MapArea? existing}) {
+  Future<MapArea?> _askForAreaInfo(List<LatLng> coords,
+      {MapArea? existing}) {
     final nameCtrl = TextEditingController(text: existing?.name);
     final descCtrl = TextEditingController(text: existing?.description);
     return showDialog<MapArea>(
@@ -86,8 +93,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: nameCtrl, decoration: InputDecoration(labelText: 'Alan Adı')),
-            TextField(controller: descCtrl, decoration: InputDecoration(labelText: 'Açıklama')),
+            TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(labelText: 'Alan Adı')),
+            TextField(
+                controller: descCtrl,
+                decoration: InputDecoration(labelText: 'Açıklama')),
           ],
         ),
         actions: [
@@ -97,13 +108,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               final n = nameCtrl.text.trim();
               if (n.isEmpty) return;
               final user = ref.read(authViewModelProvider).user!;
-              Navigator.pop(ctx, MapArea(
-                id:          existing?.id,
-                ownerId:     user.id!,
-                name:        n,
-                description: descCtrl.text.trim(),
-                coords:      coords,
-              ));
+              Navigator.pop(
+                  ctx,
+                  MapArea(
+                    id: existing?.id,
+                    ownerId: user.id!,
+                    name: n,
+                    description: descCtrl.text.trim(),
+                    coords: coords,
+                  ));
             },
             child: Text('Kaydet'),
           ),
@@ -125,7 +138,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _saveArea() async {
     final areasVm = ref.read(mapAreasViewModelProvider);
-    final result = await _askForAreaInfo(_currentAreaCoords, existing: _editingArea);
+    final result =
+    await _askForAreaInfo(_currentAreaCoords, existing: _editingArea);
     if (result != null) {
       if (_editingArea != null) {
         await areasVm.updateArea(result);
@@ -150,12 +164,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authVm   = ref.watch(authViewModelProvider);
+    final authVm = ref.watch(authViewModelProvider);
     final pointsVm = ref.watch(mapPointsViewModelProvider);
-    final areasVm  = ref.watch(mapAreasViewModelProvider);
+    final areasVm = ref.watch(mapAreasViewModelProvider);
 
     final isAdmin = authVm.user?.isAdmin ?? false;
-    final userId  = authVm.user?.id;
+    final userId = authVm.user?.id;
 
     // Nokta Marker’ları
     final markers = <Marker>{};
@@ -168,10 +182,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           draggable: true,
           onDragEnd: (newPos) async {
             final upd = MapPoint(
-              id:          p.id,
-              ownerId:     p.ownerId,
-              position:    newPos,
-              title:       p.title,
+              id: p.id,
+              ownerId: p.ownerId,
+              position: newPos,
+              title: p.title,
               description: p.description,
             );
             await ref.read(mapPointsViewModelProvider).updatePoint(upd);
@@ -198,7 +212,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           strokeWidth: 2,
           fillColor: Colors.blue.withOpacity(0.2),
           consumeTapEvents: true,
-          onTap: () => _showAreaMenu(a),       // ← İşte burası!
+          onTap: () => _showAreaMenu(a),
         ));
       }
     }
@@ -232,19 +246,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           if (loading) const Center(child: CircularProgressIndicator()),
           if (_mode == Mode.addArea)
             Positioned(
-              bottom: 20, left: 20, right: 20,
+              bottom: 20,
+              left: 20,
+              right: 20,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(onPressed: _saveArea,   child: Text('Kaydet')),
+                  ElevatedButton(onPressed: _saveArea, child: Text('Kaydet')),
                   OutlinedButton(onPressed: _cancelArea, child: Text('İptal')),
                 ],
               ),
             ),
         ],
       ),
-
-      // Butonları sola taşıdık
       floatingActionButton: Align(
         alignment: Alignment.bottomLeft,
         child: Padding(
@@ -286,63 +300,76 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _showPointMenu(MapPoint p) {
-    final isOwner = p.ownerId == ref.read(authViewModelProvider).user!.id;
+    final isOwner =
+        p.ownerId == ref.read(authViewModelProvider).user!.id;
     final isAdmin = ref.read(authViewModelProvider).user!.isAdmin;
     showModalBottomSheet(
       context: context,
       builder: (_) => SafeArea(
         child: Wrap(children: [
-          if (isOwner || isAdmin) ListTile(
-            leading: Icon(Icons.edit),
-            title: Text('Düzenle'),
-            onTap: () async {
-              Navigator.pop(context);
-              final edited = await _askForPointInfo(p.position, existing: p);
-              if (edited != null) {
-                await ref.read(mapPointsViewModelProvider).updatePoint(edited);
-              }
-            },
-          ),
-          if (isOwner || isAdmin) ListTile(
-            leading: Icon(Icons.delete),
-            title: Text('Sil'),
-            onTap: () {
-              Navigator.pop(context);
-              ref.read(mapPointsViewModelProvider).deletePoint(p.id!);
-            },
-          ),
+          if (isOwner || isAdmin)
+            ListTile(
+              leading: Icon(Icons.edit),
+              title: Text('Düzenle'),
+              onTap: () async {
+                Navigator.pop(context);
+                final edited =
+                await _askForPointInfo(p.position, existing: p);
+                if (edited != null) {
+                  await ref
+                      .read(mapPointsViewModelProvider)
+                      .updatePoint(edited);
+                }
+              },
+            ),
+          if (isOwner || isAdmin)
+            ListTile(
+              leading: Icon(Icons.delete),
+              title: Text('Sil'),
+              onTap: () {
+                Navigator.pop(context);
+                ref
+                    .read(mapPointsViewModelProvider)
+                    .deletePoint(p.id!);
+              },
+            ),
         ]),
       ),
     );
   }
 
   void _showAreaMenu(MapArea a) {
-    final isOwner = a.ownerId == ref.read(authViewModelProvider).user!.id;
+    final isOwner =
+        a.ownerId == ref.read(authViewModelProvider).user!.id;
     final isAdmin = ref.read(authViewModelProvider).user!.isAdmin;
     showModalBottomSheet(
       context: context,
       builder: (_) => SafeArea(
         child: Wrap(children: [
-          if (isOwner || isAdmin) ListTile(
-            leading: Icon(Icons.edit),
-            title: Text('Düzenle'),
-            onTap: () {
-              Navigator.pop(context);
-              setState(() {
-                _editingArea = a;
-                _currentAreaCoords = List.from(a.coords);
-                _mode = Mode.addArea;
-              });
-            },
-          ),
-          if (isOwner || isAdmin) ListTile(
-            leading: Icon(Icons.delete),
-            title: Text('Sil'),
-            onTap: () {
-              Navigator.pop(context);
-              ref.read(mapAreasViewModelProvider).deleteArea(a.id!);
-            },
-          ),
+          if (isOwner || isAdmin)
+            ListTile(
+              leading: Icon(Icons.edit),
+              title: Text('Düzenle'),
+              onTap: () {
+                Navigator.pop(context);
+                setState(() {
+                  _editingArea = a;
+                  _currentAreaCoords = List.from(a.coords);
+                  _mode = Mode.addArea;
+                });
+              },
+            ),
+          if (isOwner || isAdmin)
+            ListTile(
+              leading: Icon(Icons.delete),
+              title: Text('Sil'),
+              onTap: () {
+                Navigator.pop(context);
+                ref
+                    .read(mapAreasViewModelProvider)
+                    .deleteArea(a.id!);
+              },
+            ),
         ]),
       ),
     );

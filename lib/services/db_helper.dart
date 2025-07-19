@@ -29,6 +29,7 @@ class DBHelper {
   }
 
   Future<void> _onCreate(Database db, int version) async {
+    // users tablosu: isAdmin sütunu eklendi
     await db.execute('''
       CREATE TABLE users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,6 +46,7 @@ class DBHelper {
       'isAdmin': 1,
     });
 
+    // points tablosu
     await db.execute('''
       CREATE TABLE points(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -56,6 +58,7 @@ class DBHelper {
       )
     ''');
 
+    // areas tablosu
     await db.execute('''
       CREATE TABLE areas(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,35 +71,44 @@ class DBHelper {
   }
 
   Future<void> _onUpgrade(Database db, int oldV, int newV) async {
-    // users tablosuna isAdmin ekle (version 1→2)
+    // Version 1→2: users tablosuna isAdmin ekle
     if (oldV < 2) {
       final cols = await db.rawQuery("PRAGMA table_info('users')");
       if (!cols.any((c) => c['name'] == 'isAdmin')) {
-        await db.execute('ALTER TABLE users ADD COLUMN isAdmin INTEGER DEFAULT 0');
+        await db.execute(
+            'ALTER TABLE users ADD COLUMN isAdmin INTEGER DEFAULT 0'
+        );
       }
     }
 
-    // points ve areas tablolarına title/description ekle (version 2→4)
+    // Version 2→4: points ve areas tablolarına yeni sütunlar ekle
     if (oldV < 4) {
-      // points tablosu
+      // points tablosu: title & description
       final pointCols = await db.rawQuery("PRAGMA table_info('points')");
       if (!pointCols.any((c) => c['name'] == 'title')) {
-        await db.execute('ALTER TABLE points ADD COLUMN title TEXT');
+        await db.execute(
+            'ALTER TABLE points ADD COLUMN title TEXT'
+        );
       }
       if (!pointCols.any((c) => c['name'] == 'description')) {
-        await db.execute('ALTER TABLE points ADD COLUMN description TEXT');
+        await db.execute(
+            'ALTER TABLE points ADD COLUMN description TEXT'
+        );
       }
 
-      // areas tablosu
+      // areas tablosu: description
       final areaCols = await db.rawQuery("PRAGMA table_info('areas')");
       if (!areaCols.any((c) => c['name'] == 'description')) {
-        await db.execute('ALTER TABLE areas ADD COLUMN description TEXT');
+        await db.execute(
+            'ALTER TABLE areas ADD COLUMN description TEXT'
+        );
       }
-      // coords zaten onCreate'da var; gerekirse benzer kontrol eklenebilir
+      // coords zaten onCreate'da var
     }
   }
 
   // --- User işlemleri ---
+
   Future<int> createUser(User u) async {
     final db = await database;
     return db.insert('users', u.toMap());
@@ -115,6 +127,7 @@ class DBHelper {
   }
 
   // --- Nokta işlemleri ---
+
   Future<int> insertPoint(MapPoint p) async {
     final db = await database;
     return db.insert('points', p.toMap());
@@ -132,20 +145,33 @@ class DBHelper {
 
   Future<int> updatePoint(MapPoint p) async {
     final db = await database;
-    return db.update('points', p.toMap(), where: 'id = ?', whereArgs: [p.id]);
+    return db.update(
+      'points',
+      p.toMap(),
+      where: 'id = ?',
+      whereArgs: [p.id],
+    );
   }
 
   Future<int> deletePoint(int id) async {
     final db = await database;
-    return db.delete('points', where: 'id = ?', whereArgs: [id]);
+    return db.delete(
+      'points',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   // --- Alan işlemleri ---
+
   Future<int> insertArea(MapArea a) async {
     final db = await database;
     final m = a.toMap();
     m['coords'] = jsonEncode(
-      a.coords.map((c) => {'lat': c.latitude, 'lng': c.longitude}).toList(),
+      a.coords.map((c) => {
+        'lat': c.latitude,
+        'lng': c.longitude,
+      }).toList(),
     );
     return db.insert('areas', m);
   }
@@ -160,7 +186,10 @@ class DBHelper {
     return rows.map((m) {
       final raw = jsonDecode(m['coords'] as String) as List<dynamic>;
       final coords = raw
-          .map((e) => LatLng((e['lat'] as num).toDouble(), (e['lng'] as num).toDouble()))
+          .map((e) => LatLng(
+        (e['lat'] as num).toDouble(),
+        (e['lng'] as num).toDouble(),
+      ))
           .toList();
       return MapArea.fromMap(m, coords);
     }).toList();
@@ -170,13 +199,25 @@ class DBHelper {
     final db = await database;
     final m = a.toMap();
     m['coords'] = jsonEncode(
-      a.coords.map((c) => {'lat': c.latitude, 'lng': c.longitude}).toList(),
+      a.coords.map((c) => {
+        'lat': c.latitude,
+        'lng': c.longitude,
+      }).toList(),
     );
-    return db.update('areas', m, where: 'id = ?', whereArgs: [a.id]);
+    return db.update(
+      'areas',
+      m,
+      where: 'id = ?',
+      whereArgs: [a.id],
+    );
   }
 
   Future<int> deleteArea(int id) async {
     final db = await database;
-    return db.delete('areas', where: 'id = ?', whereArgs: [id]);
+    return db.delete(
+      'areas',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }
