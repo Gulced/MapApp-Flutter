@@ -6,6 +6,7 @@ import 'auth_viewmodel.dart';
 enum PointsStatus { initial, loading, loaded, error }
 
 class MapPointsViewModel extends ChangeNotifier {
+  // Burada da DBHelper() kullandık
   final DBHelper _db = DBHelper();
   final AuthViewModel _auth;
   PointsStatus _status = PointsStatus.initial;
@@ -35,17 +36,48 @@ class MapPointsViewModel extends ChangeNotifier {
   }
 
   Future<void> insertPoint(MapPoint p) async {
-    await _db.insertPoint(p);
-    await loadPoints();
+    _status = PointsStatus.loading;
+    notifyListeners();
+
+    try {
+      final newId = await _db.insertPoint(p);
+      _points.add(p.copyWith(id: newId));
+      _status = PointsStatus.loaded;
+    } catch (e) {
+      _error = e.toString();
+      _status = PointsStatus.error;
+    }
+    notifyListeners();
   }
 
   Future<void> updatePoint(MapPoint p) async {
-    await _db.updatePoint(p);
-    await loadPoints();
+    _status = PointsStatus.loading;
+    notifyListeners();
+
+    try {
+      await _db.updatePoint(p);
+      final idx = _points.indexWhere((pt) => pt.id == p.id);
+      if (idx != -1) _points[idx] = p;
+      _status = PointsStatus.loaded;
+    } catch (e) {
+      _error = e.toString();
+      _status = PointsStatus.error;
+    }
+    notifyListeners();
   }
 
   Future<void> deletePoint(int id) async {
-    await _db.deletePoint(id);
-    await loadPoints();
+    _status = PointsStatus.loading;
+    notifyListeners();
+
+    try {
+      await _db.deletePoint(id);
+      _points.removeWhere((pt) => pt.id == id);
+      _status = PointsStatus.loaded;
+    } catch (e) {
+      _error = e.toString();
+      _status = PointsStatus.error;
+    }
+    notifyListeners();
   }
 }

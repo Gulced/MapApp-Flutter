@@ -35,17 +35,48 @@ class MapAreasViewModel extends ChangeNotifier {
   }
 
   Future<void> insertArea(MapArea a) async {
-    await _db.insertArea(a);
-    await loadAreas();
+    _status = AreasStatus.loading;
+    notifyListeners();
+
+    try {
+      final newId = await _db.insertArea(a);
+      _areas.add(a.copyWith(id: newId));
+      _status = AreasStatus.loaded;
+    } catch (e) {
+      _error = e.toString();
+      _status = AreasStatus.error;
+    }
+    notifyListeners();
   }
 
   Future<void> updateArea(MapArea a) async {
-    await _db.updateArea(a);
-    await loadAreas();
+    _status = AreasStatus.loading;
+    notifyListeners();
+
+    try {
+      await _db.updateArea(a);
+      final idx = _areas.indexWhere((ar) => ar.id == a.id);
+      if (idx != -1) _areas[idx] = a;
+      _status = AreasStatus.loaded;
+    } catch (e) {
+      _error = e.toString();
+      _status = AreasStatus.error;
+    }
+    notifyListeners();
   }
 
   Future<void> deleteArea(int id) async {
-    await _db.deleteArea(id);
-    await loadAreas();
+    _status = AreasStatus.loading;
+    notifyListeners();
+
+    try {
+      await _db.deleteArea(id);
+      _areas.removeWhere((ar) => ar.id == id);
+      _status = AreasStatus.loaded;
+    } catch (e) {
+      _error = e.toString();
+      _status = AreasStatus.error;
+    }
+    notifyListeners();
   }
 }

@@ -1,13 +1,11 @@
-// lib/viewmodels/auth_viewmodel.dart
-
 import 'package:flutter/material.dart';
 import '../services/db_helper.dart';
 import '../models/user.dart';
 
-/// Kullanıcı kimlik doğrulama durumları
 enum AuthStatus { initial, loading, authenticated, error }
 
 class AuthViewModel extends ChangeNotifier {
+  // DBHelper.instance değil, DBHelper() çağırıyoruz
   final DBHelper _db = DBHelper();
 
   AuthStatus _status = AuthStatus.initial;
@@ -18,7 +16,6 @@ class AuthViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   User? get user => _user;
 
-  /// Yeni kullanıcı kaydı
   Future<void> register(String email, String password) async {
     _status = AuthStatus.loading;
     notifyListeners();
@@ -36,14 +33,13 @@ class AuthViewModel extends ChangeNotifier {
         _status = AuthStatus.authenticated;
       }
     } catch (e) {
-      _errorMessage = 'Kayıt sırasında hata: \$e';
+      _errorMessage = 'Kayıt sırasında hata: $e';
       _status = AuthStatus.error;
     }
 
     notifyListeners();
   }
 
-  /// Mevcut kullanıcı ile giriş
   Future<void> login(String email, String password) async {
     _status = AuthStatus.loading;
     notifyListeners();
@@ -58,14 +54,13 @@ class AuthViewModel extends ChangeNotifier {
         _status = AuthStatus.authenticated;
       }
     } catch (e) {
-      _errorMessage = 'Giriş sırasında hata: \$e';
+      _errorMessage = 'Giriş sırasında hata: $e';
       _status = AuthStatus.error;
     }
 
     notifyListeners();
   }
 
-  /// Çıkış işlemi: kullanıcıyı temizle
   void logout() {
     _user = null;
     _status = AuthStatus.initial;
